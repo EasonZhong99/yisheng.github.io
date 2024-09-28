@@ -1,34 +1,33 @@
-name: GitHub Pages
-
+name: Auto Deploy hugo acedemic
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - master  # Set a branch to deploy
 
 jobs:
-  deploy:
-    runs-on: ubuntu-22.04
+  hugo-auto-deploy:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Check out repository code
+        uses: actions/checkout@v3
         with:
-          submodules: true
-          fetch-depth: 0
+            submodules: true
+            fetch-depth: 0
 
-      - name: Download Hugo
-        run: |
-          HUGO_VERSION="0.126.0"
-          wget https://github.com/goharbor/harbor/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.tar.gz
-          tar -xzf hugo_${HUGO_VERSION}_Linux-64bit.tar.gz
-          sudo mv hugo /usr/local/bin/
-          rm hugo_${HUGO_VERSION}_Linux-64bit.tar.gz
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 0.114.0
+          extended: true
 
-      - name: Build
+      - name: Build 
         run: hugo --minify
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          deploy_key: ${{ secrets.MY_GITHUB_TOKEN }} # 使用 Secret 中设置的私钥
+          external_repository: EasonZhong99/yisheng.github.io  # Page 仓库
+          publish_branch: main  # Page 仓库的分支
+          publish_dir: ./public # 静态网页路径
+          commit_message: ${{ github.event.head_commit.message }}
